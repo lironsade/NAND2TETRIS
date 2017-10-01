@@ -16,5 +16,14 @@ CHIP PC {
     OUT out[16];
 
     PARTS:
-    Register(in= , load=, out=regout)
+    Or(a=reset, b=inc, out=tempor);
+    Or(a=tempor, b=load, out=shouldLoad);
+    Inc16(in=regout, out=incedreg);
+    Register(in=inreg, load=shouldLoad, out=regout, out=out);
+    Not(in=load, out=notLoad);
+    Not(in=reset, out=notReset);
+    And(a=inc ,b=notLoad, out=incAndNotLoad);
+    And(a=shouldLoad ,b=notReset, out=shouldLoadAndNotReset);
+    Mux16(a=in, b=incedreg, sel=incAndNotLoad, out=tempOut);
+    Mux16(a=false, b=tempOut, sel=shouldLoadAndNotReset, out=inreg);
 }

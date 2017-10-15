@@ -16,7 +16,7 @@ def isDoNothingLine(line):
     return not(line)
 
 def convertNumToBinary(num):
-    return '{0:015b}'.format(num)
+    return '{0:015b}'.format(int(num))
 
 def parseAInstruction(line):
     return '0' + convertNumToBinary(line[1:])
@@ -30,14 +30,21 @@ def breakDownCInstruction(line):
     return (dest, comp, jmp)
 
 def parseDest(dest):
-    d1 = '1' if 'A' in dest else '0'
-    d2 = '1' if 'D' in dest else '0'
-    d3 = '1' if 'M' in dest else '0'
-    return d1 + d2 + d3
+    destTable = {
+        None: "000",
+        "M": "001",
+        "D": "010",
+        "A": "100",
+        "MD": "011",
+        "AM": "101",
+        "AD": "110",
+        "AMD": "111"
+    }
+    return destTable.get(dest)
 
 def parseJmp(jmp):
     jmpTable = {
-            null: '000',
+            None: '000',
             'JGT': '001',
             'JEQ': '010',
             'JGE': '011',
@@ -48,8 +55,8 @@ def parseJmp(jmp):
     }
     return jmpTable.get(jmp)
         
-def parseComp(jmp):
-    jmpTable = {
+def parseComp(comp):
+    compTable = {
         "0": "0101010",
         "1": "0111111",
         "-1": "0111010",
@@ -79,17 +86,17 @@ def parseComp(jmp):
         "D&M": "1000000",
         "D|M": "1010101"
     }
-    return jmpTable.get(jmp)
+    return compTable.get(comp)
 
 def parseCInstruction(line):
     dest, comp, jmp = breakDownCInstruction(line)
-    return parseDest(dest) + parseComp(comp) + parseJmp(jmp)
+    return '111' + parseComp(comp) + parseDest(dest) + parseJmp(jmp)
 
 
 def parseLine(line):
     line = line.strip()
     if isDoNothingLine(line):
-        return null
+        return None
 
     if line.startswith("@"):
         return parseAInstruction(line)
@@ -99,7 +106,7 @@ def parseLine(line):
 def main(inputFileName):
     inputFile = open(inputFileName, 'r')
     outputFile = open(inputFileName[:-4] + ".hack", 'w') # ignoring .asm
-    symbolsTable = buildSymbolsTable(inputFile)
+    #symbolsTable = buildSymbolsTable(inputFile)
     for line in inputFile:
         parsed = parseLine(line)
         if parsed:

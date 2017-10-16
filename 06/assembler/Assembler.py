@@ -57,70 +57,11 @@ compTable = {
     "D|M": "1010101"
 }
 
-#######################
-
 ######################
 #  global variable   #
 ######################
-global freeAddress
+global freeAddress # last free address in memory
 global symbolsTable
-
-
-def isDoNothingLine(line):
-    if line.startswith("//"):
-        return True
-    if line.startswith("("):
-        return True
-    return not(line)
-
-def convertNumToBinary(num):
-    return '{0:015b}'.format(int(num))
-
-def translateAInstruction(line):
-    global symbolsTable
-    global freeAddress
-    variable = line[1:]
-    if variable.isdigit():
-        return '0' + convertNumToBinary(variable)
-    if variable not in symbolsTable:
-        symbolsTable[variable] = freeAddress
-        freeAddress += 1
-    return '0' + convertNumToBinary(symbolsTable[variable])
-
-def breakDownCInstruction(line):
-    firstHalf = line.split('=')
-    dest = None if len(firstHalf) == 1 else firstHalf[0]
-    secondHalf = firstHalf[-1].split(';')
-    comp = secondHalf[0]
-    jmp = None if len(secondHalf) == 1 else secondHalf[1]
-    return (dest, comp, jmp)
-
-def parseDest(dest):
-    return destTable.get(dest)
-
-def parseJmp(jmp):
-    return jmpTable.get(jmp)
-        
-def parseComp(comp):
-    return compTable.get(comp)
-
-def translateCInstruction(line):
-    dest, comp, jmp = breakDownCInstruction(line)
-    return '111' + parseComp(comp) + parseDest(dest) + parseJmp(jmp)
-
-
-def parseLine(line):
-    hasComment = line.find('//')
-    if hasComment != -1:
-        line = line[0:hasComment]
-    line = line.strip()
-    if isDoNothingLine(line):
-        return None
-
-    if line.startswith("@"):
-        return translateAInstruction(line)
-
-    return translateCInstruction(line)
 
 def buildSymbolsTable(inputFile):
     global symbolsTable
@@ -147,7 +88,7 @@ def buildSymbolsTable(inputFile):
         "LCL": "1",
         "ARG": "2",
         "THIS": "3",
-        "THAT": "4",
+        "THAT": "4"
     }
 
     # first pass
@@ -160,6 +101,63 @@ def buildSymbolsTable(inputFile):
             lineNum += 1
 
     inputFile.seek(0)
+
+#### parsing helpers ####
+def isDoNothingLine(line):
+    if line.startswith("//"):
+        return True
+    if line.startswith("("):
+        return True
+    return not(line)
+
+def convertNumToBinary(num):
+    return '{0:015b}'.format(int(num))
+
+def parseDest(dest):
+    return destTable.get(dest)
+
+def parseJmp(jmp):
+    return jmpTable.get(jmp)
+        
+def parseComp(comp):
+    return compTable.get(comp)
+
+def breakDownCInstruction(line):
+    firstHalf = line.split('=')
+    dest = None if len(firstHalf) == 1 else firstHalf[0]
+    secondHalf = firstHalf[-1].split(';')
+    comp = secondHalf[0]
+    jmp = None if len(secondHalf) == 1 else secondHalf[1]
+    return (dest, comp, jmp)
+
+#### Translation ####
+def translateAInstruction(line):
+    global symbolsTable
+    global freeAddress
+    variable = line[1:]
+    if variable.isdigit():
+        return '0' + convertNumToBinary(variable)
+    if variable not in symbolsTable:
+        symbolsTable[variable] = freeAddress
+        freeAddress += 1
+    return '0' + convertNumToBinary(symbolsTable[variable])
+
+def translateCInstruction(line):
+    dest, comp, jmp = breakDownCInstruction(line)
+    return '111' + parseComp(comp) + parseDest(dest) + parseJmp(jmp)
+
+def parseLine(line):
+    hasComment = line.find('//')
+    if hasComment != -1:
+        line = line[0:hasComment]
+    line = line.strip()
+    if isDoNothingLine(line):
+        return None
+
+    if line.startswith("@"):
+        return translateAInstruction(line)
+
+    return translateCInstruction(line)
 
 def main(inputFileName):
     inputFile = open(inputFileName, 'r')

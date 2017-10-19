@@ -127,16 +127,43 @@ def translatePop(line):
 
 def translateArithmetic(line):
     if(line == 'add'):
-        return None
+        return '@SP\n' + \
+               'M=M-1\n' + \
+               'A=M\n' + \
+               'D=M\n' + \
+               'A=A-1\n' + \
+               'M=D+M\n'
 
     if(line == 'sub'):
-        return None
+        return '@SP\n' + \
+               'M=M-1\n' + \
+               'A=M\n' + \
+               'D=M\n' + \
+               'A=A-1\n' + \
+               'M=D-M\n'
 
     if(line == 'neg'):
         return None
 
     if(line == 'eq'):
-        return None
+        return '@SP\n' + \
+               'M=M-1\n'+ \
+               'A=M\n' + \
+               'D=M\n' + \
+               'A=A-1\n' + \
+               'D=D-M\n' + \
+               '@eqLabel\n' +\
+               'D;JNE\n' + \
+               'D=0\n' + \
+               '@eqFinish\n' + \
+               '0; JMP\n' + \
+               '(eqLabel)\n' + \
+               'D=-1\n' + \
+               '(eqFinish)\n' + \
+               '@SP\n' + \
+               'A=M-1\n' + \
+               'M=D\n'
+                
 
     if(line == 'gt'):
         return None

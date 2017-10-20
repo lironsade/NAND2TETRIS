@@ -4,7 +4,14 @@ import sys
 # go line by line
 # translate memory access (push/pop)
 # translate arithmetic
-# ignore comments
+
+
+
+
+##### NOTES #######
+# static and temp are almost IDENTICAL
+# TODO: REFACTOR
+
 def translateSegment(segment):
     if (segment == 'local'):
         return 'LCL'
@@ -21,7 +28,7 @@ def parseMemoryAccess(line):
     return splitted[1], splitted[2]
 
 def translatePushConstant(i):
-    return '@'+ i +'\n'
+    return '@'+ i +'\n' + \
            'D=A\n' + \
            '@SP\n' + \
            'A=M\n' + \
@@ -30,11 +37,13 @@ def translatePushConstant(i):
            'M=M+1\n'
 
 def translatePushStatic(i):
-    return '@Foo.' + i + '\n' +\
+    return '@Foo.' + i + '\n' + \
            'D=M\n' + \
            '@SP\n' + \
            'A=M\n' + \
-           'M=D'
+           'M=D\n' + \
+           '@SP\n' + \
+           'M=M+1\n'
 
 def translatePopStatic(i):
     return '@SP\n' +\
@@ -42,26 +51,42 @@ def translatePopStatic(i):
            'A=M\n' + \
            'D=M\n' + \
            '@Foo.' + i + '\n' + \
-           'M=D\n' + \
-           '@SP\n' + \
-           'M=M+1\n'
+           'M=D\n'
 
 def translatePushTemp(i):
-    return '@Foo.' + i + '\n' +\
+    return '@R' + (i + 5) + '\n' +\
            'D=M\n' + \
            '@SP\n' + \
            'A=M\n' + \
-           'M=D'
+           'M=D\n' + \
+           '@SP\n' + \
+           'M=M+1\n'
 
 def translatePopTemp(i):
     return '@SP\n' +\
            'M=M-1\n' + \
            'A=M\n' + \
            'D=M\n' + \
-           '@Foo.' + i + '\n' + \
+           '@R' + (i + 5) + '\n' + \
+           'M=D\n'
+
+
+def translatePushPointer(i):
+    return '@THAT' if i else '@THIS' + '\n' + \
+           'D=M\n' + \
+           '@SP\n' + \
+           'A=M\n' + \
            'M=D\n' + \
            '@SP\n' + \
            'M=M+1\n'
+
+def translatePopPointer(i):
+    return '@SP\n' +\
+           'M=M-1\n' + \
+           'A=M\n' + \
+           'D=M\n' + \
+           '@THAT' if i else '@THIS' + '\n' + \
+           'M=D\n'
 
 def translatePush(line):
     # addr = segmentPointer + i
@@ -71,6 +96,11 @@ def translatePush(line):
     if (segment == 'constant'):
         return translatePushConstant(i)
     if (segment == 'static'):
+        return translatePushStatic(i)
+    if (segment == 'temp'):
+        return translatePushTemp(i)
+    if (segment == 'pointer'):
+        return translatePushTemp(i)
     
                 
     segment = translateSegment(segment)

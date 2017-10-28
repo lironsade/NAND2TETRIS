@@ -1,0 +1,32 @@
+liron
+===============================================================================
+Liron Sade, ID 312459233, liron.sade@mail.huji.ac.il
+===============================================================================
+
+                           Project 1 - Boolean Logic
+                           -------------------------
+  
+
+Submitted Files
+---------------
+README - This file.
+
+And16.hdl - and two 16 bits.
+And.hdl - and two one bits.
+DMux4Way.hdl - demultiplexor 4 way.
+DMux8Way.hdl - demultiplexor 8 way.
+DMux.hdl - demultiplexor.
+Mux16.hdl - multiplexor of 16 bits.
+Mux4Way16.hdl - multiplexor 4 way of 16 bits.
+Mux8Way16.hdl - multiplexor 8 way of 16 bits.
+Mux.hdl - multiplexor.
+Not16.hdl - not of 16 bits.
+Not.hdl - not of a single bit.
+Or16.hdl - or of two 16 bits.
+Or8Way.hdl - or on each of 8 bits.
+Or.hdl - or on two single bits.
+Xor.hdl - xor on two bits.
+
+Remarks
+-------
+* Dmux was actually very easy to implement. Simple DNF.

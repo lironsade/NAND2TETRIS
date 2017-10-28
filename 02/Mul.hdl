@@ -1,0 +1,57 @@
+CHIP Mul{
+    IN a[16], b[16];
+    OUT out[16];
+
+    PARTS:
+
+        // calculate all parts
+        Mux16(a=false, b=a, sel=b[0], out=part0);
+        ShiftLeft(in=a, out=shifted1);
+        Mux16(a=false, b= shifted1, sel=b[1], out=part1);
+        ShiftLeft(in=shifted1, out=shifted2);
+        Mux16(a=false, b= shifted2, sel=b[2], out=part2);
+        ShiftLeft(in=shifted2, out=shifted3);
+        Mux16(a=false, b= shifted3, sel=b[3], out=part3);
+        ShiftLeft(in=shifted3, out=shifted4);
+        Mux16(a=false, b= shifted4, sel=b[4], out=part4);
+        ShiftLeft(in=shifted4, out=shifted5);
+        Mux16(a=false, b= shifted5, sel=b[5], out=part5);
+        ShiftLeft(in=shifted5, out=shifted6);
+        Mux16(a=false, b= shifted6, sel=b[6], out=part6);
+        ShiftLeft(in=shifted6, out=shifted7);
+        Mux16(a=false, b= shifted7, sel=b[7], out=part7);
+        ShiftLeft(in=shifted7, out=shifted8);
+        Mux16(a=false, b= shifted8, sel=b[8], out=part8);
+        ShiftLeft(in=shifted8, out=shifted9);
+        Mux16(a=false, b= shifted9, sel=b[9], out=part9);
+        ShiftLeft(in=shifted9, out=shifted10);
+        Mux16(a=false, b= shifted10, sel=b[10], out=part10);
+        ShiftLeft(in=shifted10, out=shifted11);
+        Mux16(a=false, b= shifted11, sel=b[11], out=part11);
+        ShiftLeft(in=shifted11, out=shifted12);
+        Mux16(a=false, b= shifted12, sel=b[12], out=part12);
+        ShiftLeft(in=shifted12, out=shifted13);
+        Mux16(a=false, b= shifted13, sel=b[13], out=part13);
+        ShiftLeft(in=shifted13, out=shifted14);
+        Mux16(a=false, b= shifted14, sel=b[14], out=part14);
+        ShiftLeft(in=shifted14, out=shifted15);
+        Mux16(a=false, b= shifted15, sel=b[15], out=part15);
+        
+        // add them together in three steps
+        Add16(a=part0, b=part1, out=stepOne0);
+        Add16(a=part2, b=part3, out=stepOne1);
+        Add16(a=part4, b=part5, out=stepOne2);
+        Add16(a=part6, b=part7, out=stepOne3);
+        Add16(a=part8, b=part9, out=stepOne4);
+        Add16(a=part10, b=part11, out=stepOne5);
+        Add16(a=part12, b=part13, out=stepOne6);
+        Add16(a=part14, b=part15, out=stepOne7);
+        Add16(a=stepOne0, b=stepOne1, out=stepTwo0);
+        Add16(a=stepOne2, b=stepOne3, out=stepTwo1);
+        Add16(a=stepOne4, b=stepOne5, out=stepTwo2);
+        Add16(a=stepOne6, b=stepOne7, out=stepTwo3);
+        Add16(a=stepTwo0, b=stepTwo1, out=stepThree0);
+        Add16(a=stepTwo2, b=stepTwo3, out=stepThree1);
+        Add16(a=stepThree0, b=stepThree1, out=out);
+
+}

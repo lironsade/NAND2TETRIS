@@ -1,0 +1,25 @@
+liron
+===============================================================================
+Liron Sade, ID 312459233, liron.sade@mail.huji.ac.il
+===============================================================================
+
+                           Project 2 - Boolean Arithmetic
+                           ------------------------------
+  
+
+Submitted Files
+---------------
+README - This file.
+Add16.hdl - Adds two 16 bit buses
+ALU.hdl - Arithemtic Logic Unit
+FullAdder.hdl - Like half adder but with carry
+HalfAdder.hdl - Adds two numbers
+Inc16.hdl - Adds 1 to a number
+Mul.hdl - Multiplies two numbers
+ShiftLeft.hdl - shift left a number (multiplies by two)
+ShiftRight.hdl - shifts right a number (dividies by two)
+
+
+Remarks
+-------
+* Inc16 was done in a naive way.

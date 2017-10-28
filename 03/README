@@ -1,0 +1,26 @@
+liron
+===============================================================================
+Liron Sade, ID 312459233, liron.sade@mail.huji.ac.il
+===============================================================================
+
+                           Project 3 - Sequential Logic
+                           ----------------------------
+  
+
+Submitted Files
+---------------
+README - This file.
+a/Bit.hdl - a single bit
+a/PC.hdl - progRAM counter
+a/RAM64.hdl - RAM of size 64 registers
+a/RAM8.hdl - RAM of size 8 registers
+a/Register.hdl - a register
+b/RAM16K.hdl - RAM of size 16k registers
+b/RAM4K.hdl - RAM of size 4k registers
+b/RAM512.hdl - RAM of size 512 registers
+
+
+
+Remarks
+-------
+* The RAM was very straight forward to implement.

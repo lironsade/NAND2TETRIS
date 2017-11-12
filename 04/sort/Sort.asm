@@ -5,18 +5,39 @@
 //
 
 
-@R14
-D=M
-@outterInd
-M=D
+@outerCount
+M=0
+
 (OUTTERLOOP)
+    @R15
+    D=M
+    @outerCount  // goes from 0 to R15
+    M=M+1
+    D=D-M
+    @END
+    D;JEQ
+    @innerCount
+    M=1
 
-
-
-@innerInd
-
-
-
+(INNERLOOP)
+    @R15
+    D=M
+    @innerCount
+    M=M+1
+    D=D-M
+    @OUTTERLOOP
+    D;JLT
+    @R14
+    A=D+M // first address
+    D=A // save first address
+    @firstAdr
+    M=D
+    A=M // back to place
+    D=M // save value
+    A=A+1
+    D=D-M
+    @INNERLOOP
+    D;JGT
 
 (SWAP) // swaps @firstAdr with @secondAdr
     @firstAdr // get first address 
@@ -24,16 +45,16 @@ M=D
     D=M
     @firstVal // save value of first adr
     M=D
-    @secondAdr // get second adr
-    A=M
+    @firstAdr // get second adr
+    A=M+1
     D=M
     @firstAdr // set value of first adr
     A=M
     M=D
     @firstVal // get value of first var
     D=M
-    @secondAdr // set valur of second adr
-    A=M
+    @firstAdr // set valur of second adr
+    A=M+1
     M=D
     @innerInd
     D=M

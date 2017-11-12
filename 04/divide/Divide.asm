@@ -6,72 +6,66 @@
 // The program should divide two numbers - R13 / R14 and put the 
 // result in R15.
 	
-	@R15
-	M=0  	// init R15 == 0
-	
+	@R15    // target
+	M=0  	// starts at 0
 
 	@R14
 	D=M
 	@END
-	D;JEQ   // if (R14 == 0) goto END
+	D;JEQ   // Can't divide by zero
 
-	@R14
-	D=M
-	@divisor
-	M=D     // divisor = R14
+	@divider
+	M=D     // divider = R14
 	
-	@R13
+	@R13    // number
 	D=M
-	@remain
-	M=D     // remain = R13
+	@remainder
+	M=D     // remainder = R13
 	
-	@1 
-	D=A
-	@mul
-	M=D     // init mul ==1
+	@muler
+	M=1     // init muler with 1
 	
 (WHILE)
-	@R13
+	@R13 
 	D=M
-	@divisor
+	@divider
 	D=M-D   
-	@DO
-	D;JGE   // if (divisor - R13) >= 0 goto DO
+	@FIRSTACTION
+	D;JGE   // if (divider - R13) >= 0 jmp FIRSTACTION
 	
-	@divisor
-	M=M<<   // divisor =* 2
-	@mul
-	M=M<<   // mul =* 2
+	@divider
+	M=M<<   // divider divided by two
+	@muler
+	M=M<<   // multiplier divided by two
 	@WHILE
 	0;JMP   // repeat while loop
 
-(DO)
-	@divisor
+(FIRSTACTION)
+	@divider
 	D=M
-	@remain
+	@remainder
 	D=M-D
-	@ELSE
-	D;JLT  // if (remain - divisor) < 0 goto ELSE
+	@SECONDACTION
+	D;JLT  // if (remainder - divider) < 0 jmp SECONDACTION
 	
-	@divisor
+	@divider
 	D=M
-	@remain
-	M=M-D  // remain = remain - divisor
+	@remainder
+	M=M-D  // remainder = remainder - divider
 	
-	@mul
+	@muler
 	D=M
 	@R15
-	M=D+M  // res = res + mul
+	M=D+M  // target = target + muler
 	
-(ELSE)
-	@divisor
-	M=M>>   // divisor /= 2
-	@mul
-	M=M>>   // mul /= 2
-	
-	@mul
+(SECONDACTION)
+	@divider
+	M=M>>   // divider /= 2
+	@muler
+	M=M>>   // muler /= 2
+	@muler
 	D=M
-	@DO
-	D;JNE  // if (mul != 0) goto DO
+	@FIRSTACTION
+	D;JNE  // if (muler != 0) jmp FIRSTACTION
 
 (END)

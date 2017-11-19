@@ -1,5 +1,12 @@
 #!/usr/bin/python
 import sys
+import os
+########################################
+# File: Assembler.py                   #
+# By Liron Sade                        #
+# nand2tetris ex6                      #
+########################################
+
 
 #######################
 # hack language tables#
@@ -17,6 +24,7 @@ destTable = {
 
 jmpTable = {
         None: '000',
+        '':   '000',
         'JGT': '001',
         'JEQ': '010',
         'JGE': '011',
@@ -55,6 +63,15 @@ compTable = {
     "M-D": "1000111",
     "D&M": "1000000",
     "D|M": "1010101"
+}
+
+shiftTable = {
+    "D>>": "010010000",
+    "D<<": "010110000",
+    "A>>": "010000000",
+    "A<<": "010100000",
+    "M>>": "011000000",
+    "M<<": "011100000"
 }
 
 ######################
@@ -118,16 +135,19 @@ def parseDest(dest):
 
 def parseJmp(jmp):
     return jmpTable.get(jmp)
-        
+
 def parseComp(comp):
     return compTable.get(comp)
 
+def parseShift(comp):
+    return shiftTable.get(comp)
+
 def breakDownCInstruction(line):
     firstHalf = line.split('=')
-    dest = None if len(firstHalf) == 1 else firstHalf[0]
+    dest = None if len(firstHalf) == 1 else firstHalf[0].strip()
     secondHalf = firstHalf[-1].split(';')
-    comp = secondHalf[0]
-    jmp = None if len(secondHalf) == 1 else secondHalf[1]
+    comp = secondHalf[0].strip()
+    jmp = None if len(secondHalf) == 1 else secondHalf[1].strip()
     return (dest, comp, jmp)
 
 #### Translation ####
@@ -144,6 +164,8 @@ def translateAInstruction(line):
 
 def translateCInstruction(line):
     dest, comp, jmp = breakDownCInstruction(line)
+    if '>>' in line or '<<' in line:
+        return '1' + parseShift(comp) + parseDest(dest) + parseJmp(jmp)
     return '111' + parseComp(comp) + parseDest(dest) + parseJmp(jmp)
 
 def parseLine(line):
@@ -170,8 +192,13 @@ def main(inputFileName):
         if parsed:
             outputFile.write(parsed + "\n")
 
-    inputFile.close();
-    outputFile.close();
+    inputFile.close()
+    outputFile.close()
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    if os.path.isdir(sys.argv[1]):
+        for filename in os.listdir(sys.argv[1]):
+            if filename.endswith(".asm"):
+                main(sys.argv[1] + "/" + filename)
+    else:
+        main(sys.argv[1])

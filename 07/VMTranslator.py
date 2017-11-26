@@ -273,11 +273,9 @@ def parseLine(line):
 
     return translateArithmetic(line)
 
-def main(inputFileName):
-    global counter
-    counter = 0
+def main(inputFileName, outputFileName):
     inputFile = open(inputFileName, 'r')
-    outputFile = open(inputFileName[:-3] + ".asm", 'w') # ignoring .vm
+    outputFile = open(outputFileName, 'a')
     for line in inputFile:
         parsed = parseLine(line)
         if parsed:
@@ -288,9 +286,21 @@ def main(inputFileName):
     outputFile.close()
 
 if __name__ == "__main__":
-    if os.path.isdir(sys.argv[1]):
-        for filename in os.listdir(sys.argv[1]):
+    global counter
+    counter = 0
+    path = sys.argv[1]
+    if os.path.isdir(path):
+        if path.endswith("/"):
+            path = path[0:-1]
+        directory = os.path.basename(path)
+        outputFileName = path + "/" + directory + ".asm"
+        outputFile = open(outputFileName, 'w') # ignoring .vm
+        outputFile.close()
+        for filename in os.listdir(path):
             if filename.endswith(".vm"):
-                main(sys.argv[1] + "/" + filename)
+                main(path + "/" + filename, outputFileName)
     else:
-        main(sys.argv[1])
+        outputFileName = path[:-3] + ".asm" # ignoring .vm
+        outputFile = open(outputFileName, 'w') 
+        outputFile.close()
+        main(path, outputFileName)

@@ -144,21 +144,23 @@ def translatePop(line):
 def handleEquality(jmp):
     global counter
     counter += 1
-    return "@SP\n" + \
+    part1 ="@SP\n" + \
            "M=M-1\n" + \
            "A=M\n" + \
            "D=M\n" + \
            "@R13\n" + \
-           "M=D\n" + \
-           "@gMinus" + str(counter) + "\n" + \
+           "M=D\n"
+
+    part2 = "@gMinus" + str(counter) + "\n" + \
            "D;JLT\n" + \
            "@SP\n" + \
            "M=M-1\n" + \
            "A=M\n" + \
            "D=M\n" + \
            "@gPlusFMinus" + str(counter) + "\n" + \
-           "D;JLT\n" + \
-           "@R13\n" + \
+           "D;JLT\n"
+
+    part3 = "@R13\n" + \
            "D=D-M\n" + \
            "@CONTROL" + str(counter) + "\n" + \
            "0;JMP\n" + \
@@ -168,8 +170,9 @@ def handleEquality(jmp):
            "A=M\n" + \
            "D=M\n" + \
            "@gMinusFPlus" + str(counter) + "\n" + \
-           "D;JGT\n" + \
-           "@R13\n" + \
+           "D;JGT\n"
+
+    part4 ="@R13\n" + \
            "D=D-M\n" + \
            "@CONTROL" + str(counter) + "\n" + \
            "0;JMP\n" + \
@@ -180,8 +183,9 @@ def handleEquality(jmp):
            "(gMinusFPlus" + str(counter) + ")\n" + \
            "D=1\n" + \
            "@CONTROL" + str(counter) + "\n" + \
-           "0;JMP\n" + \
-           "(CONTROL" + str(counter) + ")\n" + \
+           "0;JMP\n"
+
+    part5 ="(CONTROL" + str(counter) + ")\n" + \
            "@ISTRUE" + str(counter) + "\n" + \
            "D;" + jmp + "\n" + \
            "D=0\n" + \
@@ -190,14 +194,15 @@ def handleEquality(jmp):
            "(ISTRUE" + str(counter) + ")\n" + \
            "D=-1\n" + \
            "@FINISH" + str(counter) + "\n" + \
-           "0;JMP\n" + \
-           "(FINISH" + str(counter) + ")\n" + \
+           "0;JMP\n"
+
+    part6 ="(FINISH" + str(counter) + ")\n" + \
            "@SP\n" + \
            "A=M\n" + \
            "M=D\n" + \
            "@SP\n" + \
            "M=M+1\n"
-
+    return part1 + part2 + part3 + part4 + part5 + part6
 
 def translateArithmetic(line):
 
@@ -301,6 +306,6 @@ if __name__ == "__main__":
                 main(path + "/" + filename, outputFileName)
     else:
         outputFileName = path[:-3] + ".asm" # ignoring .vm
-        outputFile = open(outputFileName, 'w') 
+        outputFile = open(outputFileName, 'w')
         outputFile.close()
         main(path, outputFileName)

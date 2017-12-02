@@ -37,8 +37,8 @@ def translatePushConstant(i):
            '@SP\n' + \
            'M=M+1\n'
 
-def translatePushStatic(i):
-    return '@Foo.' + i + '\n' + \
+def translatePushStatic(i, base_name):
+    return '@' + base_name + "." + str(i) + '\n' + \
            'D=M\n' + \
            '@SP\n' + \
            'A=M\n' + \
@@ -46,12 +46,12 @@ def translatePushStatic(i):
            '@SP\n' + \
            'M=M+1\n'
 
-def translatePopStatic(i):
+def translatePopStatic(i, base_name):
     return '@SP\n' +\
            'M=M-1\n' + \
            'A=M\n' + \
            'D=M\n' + \
-           '@Foo.' + i + '\n' + \
+           '@' + base_name + "." + str(i) + '\n' + \
            'M=D\n'
 
 def translatePushTemp(i):
@@ -89,7 +89,7 @@ def translatePopPointer(i):
            ('@THAT\n' if int(i) else '@THIS\n') + \
            'M=D\n'
 
-def translatePush(line):
+def translatePush(line, base_name):
     # addr = segmentPointer + i
     # *SP = *addr
     # SP++
@@ -97,7 +97,7 @@ def translatePush(line):
     if (segment == 'constant'):
         return translatePushConstant(i)
     if (segment == 'static'):
-        return translatePushStatic(i)
+        return translatePushStatic(i, base_name)
     if (segment == 'temp'):
         return translatePushTemp(i)
     if (segment == 'pointer'):
@@ -114,13 +114,13 @@ def translatePush(line):
             '@SP\n' + \
             'M=M+1\n'
 
-def translatePop(line):
+def translatePop(line, base_name):
     # addr = segmentPointer + i
     # SP--
     # *addr = *SP
     segment, i = parseMemoryAccess(line)
     if (segment == 'static'):
-        return translatePopStatic(i)
+        return translatePopStatic(i, base_name)
     if (segment == 'temp'):
         return translatePopTemp(i)
     if (segment == 'pointer'):
@@ -262,7 +262,7 @@ def translateArithmetic(line):
 
 
 
-def parseLine(line):
+def parseLine(line, base_name):
     hasComment = line.find('//')
     if hasComment != -1:
         line = line[0:hasComment]
@@ -271,18 +271,19 @@ def parseLine(line):
         return None
 
     if line.startswith("push"):
-        return translatePush(line)
+        return translatePush(line, base_name)
 
     if line.startswith("pop"):
-        return translatePop(line)
+        return translatePop(line, base_name)
 
     return translateArithmetic(line)
 
 def main(inputFileName, outputFileName):
+    base_name = os.path.basename(inputFileName)[:-3]
     inputFile = open(inputFileName, 'r')
     outputFile = open(outputFileName, 'a')
     for line in inputFile:
-        parsed = parseLine(line)
+        parsed = parseLine(line, base_name)
         if parsed:
             outputFile.write("//" + line + "\n")
             outputFile.write(parsed + "\n")

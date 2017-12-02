@@ -1,0 +1,15 @@
+liron
+===============================================================================
+Liron Sade, ID 312459233, liron.sade@mail.huji.ac.il
+===============================================================================
+
+                           Project 8 - VMTranslator
+                           ----------------------------
+  
+
+Submitted Files
+---------------
+README - This file.
+VMTranslator - runs the VMTranslator
+VMTranslator.py - Actualy VMTranslator code
+Makefile - Makefile for the VMTranslator

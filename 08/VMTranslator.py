@@ -4,6 +4,7 @@ import os
 
 
 global counter
+global function_name
 
 #TODO:
 # label
@@ -36,8 +37,8 @@ def translatePushConstant(i):
            '@SP\n' + \
            'M=M+1\n'
 
-def translatePushStatic(i):
-    return '@Foo.' + i + '\n' + \
+def translatePushStatic(i, base_name):
+    return '@' + base_name + "." + str(i) + '\n' + \
            'D=M\n' + \
            '@SP\n' + \
            'A=M\n' + \
@@ -45,12 +46,12 @@ def translatePushStatic(i):
            '@SP\n' + \
            'M=M+1\n'
 
-def translatePopStatic(i):
+def translatePopStatic(i, base_name):
     return '@SP\n' +\
            'M=M-1\n' + \
            'A=M\n' + \
            'D=M\n' + \
-           '@Foo.' + i + '\n' + \
+           '@' + base_name + "." + str(i) + '\n' + \
            'M=D\n'
 
 def translatePushTemp(i):
@@ -88,7 +89,7 @@ def translatePopPointer(i):
            ('@THAT\n' if int(i) else '@THIS\n') + \
            'M=D\n'
 
-def translatePush(line):
+def translatePush(line, base_name):
     # addr = segmentPointer + i
     # *SP = *addr
     # SP++
@@ -96,7 +97,7 @@ def translatePush(line):
     if (segment == 'constant'):
         return translatePushConstant(i)
     if (segment == 'static'):
-        return translatePushStatic(i)
+        return translatePushStatic(i, base_name)
     if (segment == 'temp'):
         return translatePushTemp(i)
     if (segment == 'pointer'):
@@ -113,13 +114,13 @@ def translatePush(line):
             '@SP\n' + \
             'M=M+1\n'
 
-def translatePop(line):
+def translatePop(line, base_name):
     # addr = segmentPointer + i
     # SP--
     # *addr = *SP
     segment, i = parseMemoryAccess(line)
     if (segment == 'static'):
-        return translatePopStatic(i)
+        return translatePopStatic(i, base_name)
     if (segment == 'temp'):
         return translatePopTemp(i)
     if (segment == 'pointer'):
@@ -259,33 +260,162 @@ def translateArithmetic(line):
                'A=M-1\n' + \
                'M=!M\n'
 
+def translateLabel(line):
+    global function_name
+    label = line.split(' ')[1]
+    return '(' + function_name + '$' + label + ')\n'
+
+def translateGoto(line):
+    global function_name
+    label = line.split(' ')[1]
+    return  '@' + function_name + '$' + label + '\n' + \
+            '0;JMP\n'
+
+def translateIfGoto(line):
+    global function_name
+    label = line.split(' ')[1]
+    return  '@SP\n' + \
+            'M=M-1\n' + \
+            'A=M\n' + \
+            'D=M\n' + \
+            '@' + function_name + '$' + label + '\n' + \
+            'D;JNE\n'
+
+def translateCall(line):
+    global function_name
+    global counter
+    name, nargs = line.split()[1:3]
+    counter += 1
+    return_address = '@RETURNTO' + str(counter) + '\n' + \
+                     'D=A\n' + \
+                     '@SP\n' + \
+                     'A=M\n' + \
+                     'M=D\n' + \
+                     '@SP\n' + \
+                     'M=M+1\n'
+    pushes = ''
+    for segment in ['LCL', 'ARG', 'THIS', 'THAT']:
+        pushes += '@' + segment +' \n' + \
+                 'D=M\n' + \
+                 '@SP\n' + \
+                 'A=M\n' + \
+                 'M=D\n' + \
+                 '@SP\n' + \
+                 'M=M+1\n'
+
+    the_jump = '@SP\n' + \
+               'D=M\n' + \
+               '@' + str(int(nargs) + 5) + '\n' + \
+               'D=D-A\n' + \
+               '@ARG\n' + \
+               'M=D\n' + \
+               '@SP\n' + \
+               'D=M\n' + \
+               '@LCL\n' + \
+               'M=D\n' + \
+               '@' + name + '\n' + \
+               '0;JMP\n' + \
+               '(RETURNTO' + str(counter) + ')\n'
+
+    return return_address + pushes + the_jump
 
 
-def parseLine(line):
+def translateReturn(line):
+    global function_name
+    pops = ''
+    for i, segment in enumerate(['THAT', 'THIS', 'ARG', 'LCL']):
+        pops += '@13\n' + \
+                'D=M\n' + \
+                '@' + str(i+1) + '\n' + \
+                'A=D-A\n' + \
+                'D=M\n' + \
+                '@' + segment + '\n' + \
+                'M=D\n'
+
+    ret_v = '@LCL\n' + \
+        'D=M\n' + \
+        '@13\n' + \
+        'MD=D\n' + \
+        '@5\n' + \
+        'A=D-A\n' + \
+        'D=M\n' + \
+        '@14\n' + \
+        'M=D\n' + \
+        '@SP\n' + \
+        'M=M-1\n' + \
+        '@SP\n' + \
+        'A=M\n' + \
+        'D=M\n' + \
+        '@ARG\n' + \
+        'A=M\n' + \
+        'M=D\n' + \
+        '@ARG\n' + \
+        'D=M+1\n' + \
+        '@SP\n' + \
+        'M=D\n' + \
+         pops + \
+        '@14\n' + \
+        'A=M\n' + \
+        '0;JMP\n'
+    return ret_v
+
+def writeInit():
+    first = '@256\n' + \
+            'D=A\n' + \
+            '@SP\n' + \
+            'M=D\n'
+    return first + translateCall('call Sys.init 0')
+
+def translateFunction(line):
+    global function_name
+    name, nargs = line.split()[1:3]
+    function_name = name
+    label = '(' + name + ')\n'
+    pushes = ''
+    zero_push = '@SP\n' + \
+                'A=M\n' + \
+                'M=0\n' + \
+                '@SP\n' + \
+                'M=M+1\n'
+    for i in range(int(nargs)):
+        pushes += zero_push
+    return label + pushes
+
+
+
+def parseLine(line, base_name):
     hasComment = line.find('//')
     if hasComment != -1:
         line = line[0:hasComment]
     line = line.strip()
     if not(line):
         return None
-    elif line.startswith("push"):
-        return translatePush(line)
-
+    if line.startswith("push"):
+        return translatePush(line, base_name)
     elif line.startswith("pop"):
-        return translatePop(line)
+        return translatePop(line, base_name)
     elif line.startswith("label"):
-        pass
+        return translateLabel(line)
     elif line.startswith("goto"):
-        pass
+        return translateGoto(line)
     elif line.startswith("if-goto"):
-        pass
+        return translateIfGoto(line)
+    elif line.startswith("call"):
+        return translateCall(line)
+    elif line.startswith("return"):
+        return translateReturn(line)
+    elif line.startswith("function"):
+        return translateFunction(line)
     return translateArithmetic(line)
 
 def main(inputFileName, outputFileName):
+    global function_name
+    function_name = ''
+    base_name = os.path.basename(inputFileName)[:-3]
     inputFile = open(inputFileName, 'r')
     outputFile = open(outputFileName, 'a')
     for line in inputFile:
-        parsed = parseLine(line)
+        parsed = parseLine(line, base_name)
         if parsed:
             outputFile.write("//" + line + "\n")
             outputFile.write(parsed + "\n")
@@ -303,6 +433,7 @@ if __name__ == "__main__":
         directory = os.path.basename(path)
         outputFileName = path + "/" + directory + ".asm"
         outputFile = open(outputFileName, 'w') # ignoring .vm
+        outputFile.write(writeInit())
         outputFile.close()
         for filename in os.listdir(path):
             if filename.endswith(".vm"):
